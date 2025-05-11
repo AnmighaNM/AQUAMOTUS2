@@ -1,0 +1,56 @@
+{% extends 'StationMaster/Master_navbar_sidebar.html' %}
+{% load static %}
+{% block content %}
+
+<div class="content-wrapper">
+    <div class="pcoded-content">
+        <div class="pcoded-inner-content"><br><br>
+            <div class="main-body">
+                <div class="page-wrapper">
+                    <div class="container">
+                        <h2 class="text-center mb-4">Add offer</h2>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <form method="POST" action="{% url 'WebStationMaster:add_offer' %}">
+                                                {% csrf_token %}
+                                                <div class="form-group">
+                                                    <label for="service">Service</label>
+                                                    <select name="service" id="service" class="form-control" required>
+                                                        <option value="0">--Select Services--</option>
+                                                        {% for i in services %}
+                                                        <option value="{{i.id}}">{{i.assignboat_boat.boat_name}}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="form-group">
+                                                        <label for="from_date">From Date</label>
+                                                        <input type="date" class="form-control" id="from_date" name="from_date" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="to_date">To Date</label>
+                                                        <input type="date" class="form-control" id="to_date" name="to_date" required>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="discount">Discount</label>
+                                                    <input type="number" class="form-control" id="discount" name="discount" min="0" max="100" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <button type="submit" class="btn btn-primary" >Add Offer</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

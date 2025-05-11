@@ -1,0 +1,203 @@
+{% extends 'StationMaster/Master_navbar_sidebar.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offer Report</title>
+</head>
+<style>
+    .content {
+        margin-top: 3%;
+        margin-left: 20%;
+        margin-right: 10%;
+        text-align: center;
+        border-radius: 10px;
+    }
+
+    .search {
+        color: rgb(55, 52, 52);
+    }
+
+    input[type="text"], input[type="number"] {
+        color: rgb(31, 40, 40);
+        padding: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-right: 10px;
+    }
+
+    input[type="submit"], input[type="button"] {
+        background-color: rgb(160, 23, 23);
+        color: antiquewhite;
+        width: 100px;
+        border-radius: 2px;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+    input[type="button"] {
+        background-color: rgb(66, 88, 169);
+    }
+
+    input[type="submit"]:hover, input[type="button"]:hover {
+        opacity: 0.9;
+    }
+
+    table {
+        border-collapse: collapse;
+        background-color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border: 1px solid #ddd;
+    }
+
+    thead th {
+        background-color: #156dcaee;
+        color: #ffffff;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    tbody tr:hover {
+        background-color: #f1f1f1;
+        cursor: pointer;
+    }
+
+    .status-approved {
+        background-color: rgb(18, 60, 18);
+        color: #ddd;
+        border-radius: 2px;
+    }
+
+    .status-rejected {
+        background-color: rgb(201, 8, 8);
+        color: #ddd;
+        border-radius: 2px;
+    }
+
+    .status-apply {
+        background-color: rgb(237, 212, 22);
+        color: #070202;
+        border-radius: 2px;
+    }
+</style>
+<body>
+    <section class="content">
+        <h1>Concession Request</h1>
+        <hr>
+        <section class="search">
+            
+            <form id="searchForm">
+                <label for="searchName">Name</label>
+                <input type="text" id="searchName" placeholder="Search by full name">
+                <label for="searchPrice">Email</label>
+                <input type="text" id="searchPrice" placeholder="Search by email">
+                <label for="searchDuration">Phone</label>
+                <input type="text" id="searchDuration" placeholder="Search by phone">
+                <input type="button" value="Print" onclick="window.print()">
+            </form>
+        </section>
+        <hr>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Id Card</th>
+                    <th>Aadhar Card</th>
+                    <th>Date</th>
+                    <th>Place</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="offerTableBody">
+               {% for i in data %}
+               <tr>
+                <td>{{ i.full_name }}</td>
+                <td>{{ i.email }}</td>
+                <td>{{ i.phone }}</td>
+                <td>
+                    <a href="{{ i.id_card.url }}" class="btn btn-info btn-sm" target="_blank">View ID Card</a>
+                </td>
+                <td>
+                    <a href="{{ i.aadhar_card.url }}" class="btn btn-info btn-sm" target="_blank">View Aadhar</a>
+                </td>
+                <td >from: {{ i.start_date }}<br>to: {{ i.end_date }}</td>
+                <td>from: {{ i.start_place }}<br>to: {{ i.end_place }}</td>
+                {% if i.status == "Approved" %} 
+                    <td class="status-approved">{{ i.status }}</td>
+                {% elif i.status == "Rejected" %}
+                    <td class="status-rejected">{{ i.status }}</td>
+                {% else %}
+                    <td class="status-apply">{{ i.status }}</td>
+                {% endif %}
+                <td>
+                    <form method="post" action="{% url 'WebStationMaster:approve_concession' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="id" value="{{ i.id }}">
+                        <input type="submit" value="Approve" style="background-color: #2f6515ee;">
+                    </form><br>
+                    <form method="post" action="{% url 'WebStationMaster:reject_concession' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="id" value="{{ i.id }}">
+                        <input type="submit" value="Reject">
+                    </form>
+                </td>
+               </tr>
+               {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center">No Concession found.</td>
+                        </tr>
+                        {% endfor %}
+            </tbody>
+        </table>
+    </section>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchName = document.getElementById("searchName");
+            const searchPrice = document.getElementById("searchPrice");
+            const searchDuration = document.getElementById("searchDuration");
+            const tableBody = document.getElementById("offerTableBody");
+
+            function filterTable() {
+                const nameValue = searchName.value.toLowerCase();
+                const priceValue = searchPrice.value.toLowerCase();
+                const durationValue = searchDuration.value.toLowerCase();
+
+                Array.from(tableBody.getElementsByTagName("tr")).forEach(row => {
+                    const cells = row.getElementsByTagName("td");
+                    const fullName = cells[0]?.textContent.toLowerCase() || "";
+                    const email = cells[1]?.textContent.toLowerCase() || "";
+                    const phone = cells[2]?.textContent.toLowerCase() || "";
+
+                    const matchesName = !nameValue || fullName.includes(nameValue);
+                    const matchesEmail = !priceValue || email.includes(priceValue);
+                    const matchesPhone = !durationValue || phone.includes(durationValue);
+
+                    row.style.display = matchesName && matchesEmail && matchesPhone ? "" : "none";
+                });
+            }
+
+            searchName.addEventListener("input", filterTable);
+            searchPrice.addEventListener("input", filterTable);
+            searchDuration.addEventListener("input", filterTable);
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

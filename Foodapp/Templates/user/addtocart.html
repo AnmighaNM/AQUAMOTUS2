@@ -1,0 +1,62 @@
+{% include 'user/header.html' %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 offset-md-0">
+            <h2 class="text-center">View Menu</h2>
+
+            <form action="{% url 'WebFoodapp:cus_search_menu' %}" method="post">
+                {% csrf_token %}
+                <div class="form-group d-flex">
+                    <select name="place" id="place" class="form-control me-2">
+                        <option value="">select place</option>
+                        {% for place in places %}
+                        <option value="{{ place.id }}">{{ place.place_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" name="search" id="search" class="form-control me-2" placeholder="Search Menu">
+                    <button type="submit" class="btn btn-success me-2">Search</button>
+                    <a href="{% url 'WebFoodapp:addtocart' %}" class="btn btn-primary">Reset</a>
+                </div>
+            </form>
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Description</th>
+                        <th>Image</th>
+                        <th>Quantity</th>
+                        <th>Veg/Non-Veg</th>
+                        <th colspan="2" style="text-align: center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for menu in menus %}
+                    <tr>
+                        <td>{{ menu.category_id.category }}</td>
+                        <td>{{ menu.item }}</td>
+                        <td>{{ menu.price }}</td>
+                        <td>{{ menu.description }}</td>
+                        <td><img src="{{ menu.image.url }}" alt="{{ menu.item }}" width="200" height="150"></td>
+                        <td>{{ menu.quantity }}</td>
+                        <td>{{ menu.diff }}</td>
+                        <td>
+                            <form action="{% url 'WebFoodapp:cart' %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="id" value="{{ menu.id }}">
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                <input type="number" name="quantity" id="quantity" class="form-control" value="1" min="1">
+                                <button type="submit" class="btn btn-warning">Add to Cart</button>
+                                <button type="submit" class="btn btn-danger">Buy Now</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+          
+        </div>
+    </div>
+</div>
+{% include 'user/footer.html'%}

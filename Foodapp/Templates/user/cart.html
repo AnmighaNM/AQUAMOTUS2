@@ -1,0 +1,45 @@
+{% include 'user/header.html' %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12 offset-md-0">
+            <h2 class="text-center">View Cart</h2>
+
+        
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Price</th>
+                        <th>Image</th>
+                        <th>Order Qunantity</th>
+                        <th colspan="2" style="text-align: center;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in cart %}
+                    <tr>
+                        <td>{{ c.menu_id.item  }}</td>
+                        <td>{{ c.menu_id.price }}</td>
+                        <td><img src="{{ c.menu_id.image.url }}"  width="200" height="150"></td>
+                        <td>{{ c.menu_id.quantity }}</td>
+                        <td>
+                            <form action="{% url 'WebFoodapp:buy' %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="id" value="{{ c.id }}">
+                                <button type="submit" class="btn btn-warning">Buy</button>
+                            </form>
+                            <form action="{% url 'WebFoodapp:delete_buy' %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="id" value="{{ c.id }}">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+          
+        </div>
+    </div>
+</div>
+{% include 'user/footer.html'%}

@@ -1,0 +1,339 @@
+{% extends 'User/HomePage.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concession</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background: #f0f2f5;
+        }
+        .concession-container {
+            margin-top: 100px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            padding: 20px;
+            flex: 1;
+        }
+        .concession-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .btn-custom {
+            font-size: 14px;
+            margin: 5px;
+        }
+        .alert-container {
+            display: none;
+        }
+        .concession-list {
+            margin-top: 100px;
+            flex: 1;
+        }
+        .concession-item {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .concession-title {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .concession-date {
+            font-size: 14px;
+            color: #888;
+        }
+        .side-by-side {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .date-fields {
+            display: flex;
+            gap: 20px;
+        }
+        .date-fields .form-group {
+            flex: 1;
+        }
+    </style>
+    <script>
+        function validateDates() {
+            var startDate = document.getElementById('start_date').value;
+            var endDate = document.getElementById('end_date').value;
+
+            if (startDate > endDate) {
+                alert("End date must be later than the start date.");
+                return false;
+            }
+            return true;
+        }
+
+        $(document).ready(function () {
+            $('#id_card').on('change', function () {
+                let fileName = $(this).val();
+                if (!fileName || !/\.pdf$/i.test(fileName)) {
+                    $('#proofErrorID').text('Invalid proof file. Only PDF is allowed.');
+                } else {
+                    $('#proofErrorID').text('');
+                }
+            });
+
+            $('#aadhar_card').on('change', function () {
+                let fileName = $(this).val();
+                if (!fileName || !/\.pdf$/i.test(fileName)) {
+                    $('#proofErrorAadhar').text('Invalid proof file. Only PDF is allowed.');
+                } else {
+                    $('#proofErrorAadhar').text('');
+                }
+            });
+
+            if ($(".alert-container").length) {
+                $(".alert-container").show().delay(4000).fadeOut();
+            }
+        });
+
+        function printConcession(element) {
+            var printContents = element.innerHTML;
+            var originalContents = document.body.innerHTML;
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+            location.reload();
+        }
+    </script>
+</head>
+<body>
+    <div class="container side-by-side">
+        <!-- Concession Form -->
+        <div class="concession-container">
+            {% if message %}
+            <div class="alert alert-success alert-container" role="alert">
+                {{ message }}
+            </div>
+            {% endif %}
+            <h2 class="text-center concession-header">Concession Form</h2>
+            <form action="{% url 'WebUser:concession' %}" method="post" enctype="multipart/form-data" onsubmit="return validateDates()">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="full_name">Full Name (as per ID card)</label>
+                    <input type="text" name="full_name" id="full_name" class="form-control" value="{{ user.first_name }} {{ user.last_name }}" required readonly>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" name="email" id="email" class="form-control" value="{{ user }}" required readonly>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" name="phone" id="phone" class="form-control" value="{{ user.profile.user_contact }}" required readonly>
+                </div>
+                <div class="form-group">
+                    <label for="id_card">Upload ID Card</label>
+                    <input type="file" name="id_card" id="id_card" class="form-control" accept=".pdf" required>
+                    <small id="proofErrorID" class="form-text text-danger"></small>
+                </div>
+                <div class="form-group">
+                    <label for="aadhar_card">Aadhar Proof</label>
+                    <input type="file" name="aadhar_card" id="aadhar_card" class="form-control" accept=".pdf" required>
+                    <small id="proofErrorAadhar" class="form-text text-danger"></small>
+                </div>
+                <div class="date-fields">
+                    <div class="form-group">
+                        <label for="start_date">Start Date</label>
+                        <input type="date" name="start_date" id="start_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="end_date">End Date</label>
+                        <input type="date" name="end_date" id="end_date" class="form-control" required>
+                    </div>
+                </div>
+                <div class="date-fields">
+                    <div class="form-group">
+                        <label for="start_place">Start Place</label>
+                        <select name="start_place" id="start_place" class="form-control">
+                            <option value="">Select Start Place</option>
+                            {% for i in places %}
+                            <option value="{{ i.place_name }}">{{ i.place_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="end_place">End Place</label>
+                        <select name="end_place" id="end_place" class="form-control">
+                            <option value="">Select End Place</option>
+                            {% for i in places %}
+                            <option value="{{ i.place_name }}">{{ i.place_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-custom"><i class="fas fa-check"></i> Submit</button>
+                    <button type="reset" class="btn btn-secondary btn-custom"><i class="fas fa-times"></i> Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Display Submitted Feedback -->
+        <div class="concession-list">
+            <h3 class="text-center">Your Concession Status</h3>
+            <div class="row">
+                <div class="col-md-12">
+                    {% for i in concession_list %}
+                    <div class="concession-item printable-area" data-start="{{ i.start_date }}" data-end="{{ i.end_date }}">
+                        {% if i.status == "Approved" %}
+                            <div class="concession-title" style="color: #28a745;">{{ i.status }}</div>
+                            <div class="text-right mt-2">
+                                <button class="btn btn-success btn-sm" onclick="printConcession(this.closest('.printable-area'))">
+                                    <i class="fas fa-print"></i> Print
+                                </button>
+                            </div>
+                        {% elif i.status == "Rejected" %}
+                            <div class="concession-title" style="color: #c3391e;">{{ i.status }}</div>
+                        {% else %}
+                            <div class="concession-title" style="color: #f7c00b;">{{ i.status }}</div>
+                        {% endif %}
+                        <div class="para"> 
+                            <b>Full Name :</b> {{ user.first_name }} {{ user.last_name }}<br>
+                            <b>Email :</b> {{ user.email }}<br>
+                        </div>
+                        <div class="date-fields mt-2">
+                            <div class="concession-date"><b>From :</b> {{ i.start_place }}</div>
+                            <div class="concession-date"><b>To :</b> {{ i.end_place }}</div>
+                        </div>
+                        <div class="date-fields">
+                            <div class="concession-date"><b>From :</b> {{ i.start_date }}</div>
+                            <div class="concession-date"><b>To :</b> {{ i.end_date }}</div>
+                        </div>
+                        {% if i.status == "Approved" %}
+                        <div class="date-table-container mt-2">
+                            <h6><b>Travel Dates:</b></h6>
+                            <table class="table table-bordered table-sm travel-date-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Date</th>
+                                        <th>Sign</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        {% endif %} 
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Scripts -->
+    <script>
+        // Function to format date to YYYY-MM-DD
+        function formatDate(date) {
+            let d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+    
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+    
+            return [year, month, day].join('-');
+        }
+    
+        const today = new Date();
+    
+        // Tomorrow's date
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+        const minStart = formatDate(tomorrow);
+    
+        // End date: 10 days after tomorrow
+        const endMinDate = new Date(tomorrow);
+        endMinDate.setDate(endMinDate.getDate() + 10);
+        const minEnd = formatDate(endMinDate);
+    
+        // Set min and value for start_date
+        const startInput = document.getElementById('start_date');
+        startInput.min = minStart;
+        startInput.value = minStart;
+    
+        // Set min and value for end_date
+        const endInput = document.getElementById('end_date');
+        endInput.min = minEnd;
+        endInput.value = minEnd;
+    </script>
+
+    <script>
+        function validateDates() {
+            var startDate = document.getElementById('start_date').value;
+            var endDate = document.getElementById('end_date').value;
+
+            if (startDate > endDate) {
+                alert("End date must be later than the start date.");
+                return false;
+            }
+            return true;
+        }
+
+        function generateDateTable(start, end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            const dates = [];
+            let current = new Date(startDate);
+
+            while (current <= endDate) {
+                dates.push(new Date(current));
+                current.setDate(current.getDate() + 1);
+            }
+            return dates;
+        }
+
+        function fillTravelDates() {
+            document.querySelectorAll('.concession-item').forEach(item => {
+                const start = item.dataset.start;
+                const end = item.dataset.end;
+
+                if (!start || !end) return;
+
+                const tbody = item.querySelector('.travel-date-table tbody');
+                if (!tbody) return;
+
+                const dates = generateDateTable(start, end);
+                tbody.innerHTML = ""; // Clear existing
+                dates.forEach((date, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${idx + 1}</td><td>${date.toISOString().split('T')[0]}</td><td></td>`;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        function printConcession(element) {
+            fillTravelDates();  // Ensure table is filled
+            var printContents = element.innerHTML;
+            var originalContents = document.body.innerHTML;
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+            location.reload();
+        }
+
+        $(document).ready(function(){
+            if ($(".alert-container").length) {
+                $(".alert-container").show().delay(4000).fadeOut();
+            }
+        });
+    </script>
+</body>
+</html>
+{% endblock content %}

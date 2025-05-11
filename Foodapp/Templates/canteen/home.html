@@ -1,0 +1,31 @@
+{% include 'canteen/header.html' %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2 class="text-center">Welcome {{ user.name }}</h2>
+            <br>
+            {% if menus %}
+            <h2 class="text-center">Today's Menu</h2>
+            <div class="row text-center"> <!-- Row for menu items -->
+                {% for menu in menus %}
+                <div class="col-md-4 mb-4"> <!-- Columns to align in a row -->
+                    <div class="menu-item card p-3 shadow-sm">
+                        {% if menu.image %}
+                        <img src="{{ menu.image.url }}" class="img-fluid rounded" alt="{{ menu.item }}" style="height: 100px;">
+                        {% else %}
+                        <p>No Image Available</p>
+                        {% endif %}
+                        <p><strong>{{ menu.item }}</strong></p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <h2 class="text-center text-danger">No Menu Available</h2>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+{% include 'canteen/footer.html' %}
